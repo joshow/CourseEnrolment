@@ -1,4 +1,4 @@
-/*
+package datatype;/*
 오전 8시 ~ 오후 10시 까지 30분 단위로 수업 시간을 지정할 수 있다.
 유효 범위 [ 1~28 ]
     01 - 08:00 ~ 08:30
@@ -30,19 +30,26 @@
     27 - 21:00 ~ 21:30
     28 - 21:30 ~ 22:00
 */
-
+// ClassTime 은 immutable 클래스이다.
 public class ClassTime {
+    private EDay day;
     private int startOfClass;
     private int endOfClass;
 
-    public ClassTime(int startOfClass, int endOfClass) {
-        updateTime(startOfClass, endOfClass);
-    }
-
-    public void updateTime(int startOfClass, int endOfClass) {
+    public ClassTime(EDay day, int startOfClass, int endOfClass) {
         assert 0 < startOfClass && startOfClass < endOfClass && endOfClass < 29 : "Invalid Class Time";
+        this.day = day;
         this.startOfClass = startOfClass;
         this.endOfClass = endOfClass;
+    }
+
+    public boolean isOverlapTime(ClassTime other) {
+        return this.startOfClass <= other.startOfClass && other.startOfClass < this.endOfClass
+                || other.startOfClass <= this.startOfClass && this.startOfClass < other.endOfClass;
+    }
+
+    public EDay getDay() {
+        return day;
     }
 
     public int getStart() {
