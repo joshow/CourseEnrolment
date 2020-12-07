@@ -1,12 +1,8 @@
 package database;
 
-import datatype.Ajouin;
 import datatype.ClassTime;
 import datatype.EDay;
-import datatype.EDepartment;
 import datatype.Lecture;
-import datatype.Professor;
-import datatype.Student;
 import datatype.Subject;
 
 import java.io.BufferedReader;
@@ -29,7 +25,7 @@ public class LectureDataBase extends DataBase {
         BufferedReader reader;
         try {
             InputStream iStream = LectureDataBase.class.getResourceAsStream(RESOURCE_PATH);
-            InputStreamReader iReader = new InputStreamReader(iStream, "UTF-16");
+            InputStreamReader iReader = new InputStreamReader(iStream, "UTF-8");
             reader = new BufferedReader(iReader);//new FileReader(RESOURCE_PATH));
 
             String line = reader.readLine();
@@ -50,7 +46,7 @@ public class LectureDataBase extends DataBase {
                 String classroom = columns[5];
 
                 // 수업 시간은 반드시 (시작,끝) 짝수개로 나타나야 한다.
-                assert (columns.length - 5) % 2 == 0: "Lecture dataBase initialize fail: Cannot initialize class time!";
+                assert (columns.length - 6) % 2 == 0: "Lecture dataBase initialize fail: Cannot initialize class time!";
                 ArrayList<ClassTime> classTimes = new ArrayList<>();
 
                 for (int i = 6; i < columns.length; i += 2) {

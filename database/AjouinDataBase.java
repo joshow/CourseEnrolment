@@ -16,7 +16,7 @@ public class AjouinDataBase extends DataBase {
     private static AjouinDataBase instance;
 
     private HashMap<String, Ajouin> data = new HashMap<>();
-    private HashMap<String, String> passWords = new HashMap<>();
+    private HashMap<String, String> passwords = new HashMap<>();
 
     private AjouinDataBase() {
         super();
@@ -24,12 +24,13 @@ public class AjouinDataBase extends DataBase {
         BufferedReader reader;
         try {
             InputStream iStream = AjouinDataBase.class.getResourceAsStream(RESOURCE_PATH);
-            InputStreamReader iReader = new InputStreamReader(iStream, "UTF-16");
+            InputStreamReader iReader = new InputStreamReader(iStream, "UTF-8");
             reader = new BufferedReader(iReader);//new FileReader(RESOURCE_PATH));
 
             String line = reader.readLine();
 
             assert line != null: "Ajouin dataBase initialize fail: wrong file";
+            System.out.println(line);
             assert line.equals("AJOUIN"): "Ajouin dataBase initialize fail: Invalid file signature";
 
             reader.readLine();          // just column signature
@@ -38,8 +39,8 @@ public class AjouinDataBase extends DataBase {
                 String[] columns = line.split(",");
 
                 String uniqueKey = columns[0];
-                assert !passWords.containsKey(uniqueKey): "Ajouin dataBase initialize fail: Duplicated unique key";
-                passWords.put(uniqueKey, columns[1]);
+                assert !passwords.containsKey(uniqueKey): "Ajouin dataBase initialize fail: Duplicated unique key";
+                passwords.put(uniqueKey, columns[1]);
                 String name = columns[2];
                 String department = columns[3];
 
@@ -93,5 +94,15 @@ public class AjouinDataBase extends DataBase {
 
         data.remove(uniqueKey);
         return true;
+    }
+
+    public boolean isValidLoginInfo(String id, String pw) {
+        if (passwords.containsKey(id)) {
+            if (passwords.get(id).equals(pw)) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 }
