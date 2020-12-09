@@ -1,4 +1,4 @@
-﻿SUBJECT
+SUBJECT
 과목명,과목코드,교과구분,해당학과
 컴퓨터프로그래밍및실습,F055,CORE,SW
 컴퓨터네트워크,F058,CORE,SW
@@ -24,7 +24,7 @@
 신호및시스템,C064,CORE,ECE
 반도체공학,C074,CORE,ECE
 디지털신호처리,C081,CORE,ECE
-운영체제B013,CORE,ECE
+운영체제,B013,CORE,ECE
 자료구조및실습,B012,CORE,ECE
 모바일응용보안및실습,B025,CORE,CS
 현대암호이론및응용,B001,CORE,CS

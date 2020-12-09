@@ -1,11 +1,12 @@
 package datatype;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class Subject {
+public class Subject implements Cloneable {
     private String name;
     private String code;
-    private int classification; // TODO: 교과 구분 ENUM 클래스 만들기
+    private EClassification classification;
     private ArrayList<EDepartment> majorDepartments;
 
     // 임시
@@ -13,15 +14,16 @@ public class Subject {
 
     }
 
-    public Subject(String name, String code, int classification) {
-        // TODO: classification이 전공과목일 때 majorDepartments 가 초기화 되지 않는 경우를 배제하는 assert 추가.
+    public Subject(String name, String code, EClassification classification) {
+        assert classification != EClassification.CORE;
+
         this.name = name;
         this.code = code;
         this.classification = classification;
         this.majorDepartments = new ArrayList<>();
     }
 
-    public Subject(String name, String code, int classification, EDepartment majorDepartment) {
+    public Subject(String name, String code, EClassification classification, EDepartment majorDepartment) {
         this.name = name;
         this.code = code;
         this.classification = classification;
@@ -29,12 +31,13 @@ public class Subject {
         this.majorDepartments.add(majorDepartment);
     }
 
-    public Subject(String name, String code, int classification, ArrayList<EDepartment> majorDepartments) {
+    public Subject(String name, String code, EClassification classification, EDepartment[] majorDepartments) {
+        assert majorDepartments != null && majorDepartments.length != 0;
+
         this.name = name;
         this.code = code;
         this.classification = classification;
-        this.majorDepartments = new ArrayList<>();
-        this.majorDepartments.addAll(majorDepartments);
+        this.majorDepartments = new ArrayList<>(Arrays.asList(majorDepartments));
     }
 
     public void addMajorDepartment(EDepartment department) {
@@ -50,11 +53,23 @@ public class Subject {
         return code;
     }
 
-    public int getClassification() {
+    public EClassification getClassification() {
         return classification;
     }
 
     public ArrayList<EDepartment> getMajorDepartments() {
         return majorDepartments;
+    }
+
+    @Override
+    public Object clone(){
+        Object subjectClone = null;
+
+        try {
+            subjectClone = super.clone();
+        } catch (CloneNotSupportedException e) {
+            assert false: "Fail Subject.clone()";
+        }
+        return subjectClone;
     }
 }

@@ -74,6 +74,10 @@ public class Lecture implements Cloneable {
         return classTimes;
     }
 
+    public Subject getSubject() {
+        return subject;
+    }
+
     public int getCredit() {
         return credit;
     }
