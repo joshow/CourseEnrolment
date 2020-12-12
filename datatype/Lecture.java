@@ -22,6 +22,7 @@ public class Lecture implements Cloneable {
         this.professorId = professorId;
         this.professorName = professorName;
         this.subject = subject;
+        this.credit = credit;
         this.maxEnrolCount = maxEnrolCount;
         this.classroom = classroom;
         this.classTimes = classTimes;

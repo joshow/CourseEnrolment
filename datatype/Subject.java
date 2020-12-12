@@ -9,11 +9,6 @@ public class Subject implements Cloneable {
     private EClassification classification;
     private ArrayList<EDepartment> majorDepartments;
 
-    // 임시
-    public Subject() {
-
-    }
-
     public Subject(String name, String code, EClassification classification) {
         assert classification != EClassification.CORE;
 
@@ -41,7 +36,9 @@ public class Subject implements Cloneable {
     }
 
     public void addMajorDepartment(EDepartment department) {
-        // TODO: 교과 구분상 전공 과목이 아닐시 early return
+        if (classification != EClassification.CORE) {
+            return;
+        }
         this.majorDepartments.add(department);
     }
 

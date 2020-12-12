@@ -1,7 +1,9 @@
 import database.AjouinDataBase;
 import database.LectureDataBase;
+import database.SubjectDataBase;
 import datatype.Ajouin;
 import datatype.Lecture;
+import datatype.Subject;
 
 public class TestProgram {
     public static void main(String args[]) {
@@ -40,9 +42,18 @@ public class TestProgram {
             System.out.println("Login Fail");
         if (DB_ajouin.isValidLoginInfo("invalid ID", "woonglife") == false)
             System.out.println("Login Fail");
-
         if (DB_ajouin.isValidLoginInfo("20142348", "woonglife") == true)
             System.out.println("Login Success!");
+
+        // Subject DB Test
+        SubjectDataBase DB_subject = SubjectDataBase.getInstance();
+        Subject subj = DB_subject.selectOrNull("F071");
+        System.out.println(subj.getName() + " " + subj.getCode() + " " + subj.getClassification() + " " + subj.getMajorDepartments().get(0));
+
+        // Delete Test
+        DB_ajouin.delete("201520659");
+        lecDb.delete("20NFNG");
+        DB_subject.delete("F071");
 
         System.out.println();
     }
