@@ -25,6 +25,10 @@ public abstract class Ajouin implements Cloneable, ICloneable<Ajouin> {
         return major;
     }
 
+    public EAjouinIdentity getIdentity() {
+        return identity;
+    }
+
     @Override    // ICloneable<Ajouin>
     public Ajouin clone(){
         Ajouin ajouinClone = null;

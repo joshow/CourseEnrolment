@@ -3,11 +3,22 @@ import database.DataBase;
 import database.LectureDataBase;
 import database.SubjectDataBase;
 import datatype.Ajouin;
+import datatype.ClassTime;
+import datatype.EDay;
 import datatype.Lecture;
 import datatype.Subject;
+import enrolment.EEnrolmentState;
+import enrolment.EnrolmentManager;
+
+import java.util.ArrayList;
 
 public class TestProgram {
     public static void main(String[] args) {
+        //TestDataBase();
+        TestEnrolmentManager();
+    }
+
+    public static void TestDataBase() {
         // DataBase Example
         DataBase<Ajouin> DB_ajouin = AjouinDataBase.getDB();
         Ajouin ajouin = DB_ajouin.selectOrNull("201520659");
@@ -55,7 +66,32 @@ public class TestProgram {
         DB_ajouin.delete("201520659");
         DB_lecture.delete("20NFNG");
         DB_subject.delete("F071");
-
-        System.out.println();
     }
+
+    private static void TestEnrolmentManager() {
+        EnrolmentManager em = new EnrolmentManager();
+        DataBase<Ajouin> DB_ajouin = AjouinDataBase.getDB();
+        DataBase<Subject> DB_subject = SubjectDataBase.getDB();
+        DataBase<Lecture> DB_lecture = LectureDataBase.getDB();
+
+        Lecture lec = DB_lecture.selectOrNull("20FGHE");
+        assert em.enrolLectureFromProfessor("123456778", lec) == EEnrolmentState.FAIL_ENROLLED_LECTURE;
+
+        ArrayList<ClassTime> cts = new ArrayList<>();
+        cts.add(new ClassTime(EDay.MON, 9, 11));
+        cts.add(new ClassTime(EDay.WED, 9, 11));
+
+        lec = new Lecture("201422949", DB_ajouin.selectOrNull("201422949").getName(), DB_subject.selectOrNull("F071"), 3, 30, "원999", cts);
+        assert em.enrolLectureFromProfessor("201422949", lec) == EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
+
+        lec = new Lecture("20081588", DB_ajouin.selectOrNull("20081588").getName(), DB_subject.selectOrNull("C025"), 3, 30, "원999", cts);
+        assert em.enrolLectureFromProfessor("123456778", lec) == EEnrolmentState.FAIL_INVALID_ID;
+
+        assert em.enrolLectureFromProfessor("20081588", lec) == EEnrolmentState.SUCCESS;
+
+        // TODO: 강의 등록 중 FAIL_OVERLAP_CLASSROOM 테스트
+        // TODO: 강의 취소 및 수강신청/취소 테스트
+    }
+
+
 }

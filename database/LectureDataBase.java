@@ -120,4 +120,18 @@ public class LectureDataBase {
             e.printStackTrace();
         }
     }
+
+    // 강의가 현재 등록된 강의들과 시간대와 장소가 겹치는 검증한다.
+    public static boolean canAdd(Lecture lecture) {
+        if (instance == null) {
+            getDB();
+        }
+
+        for (Lecture lec : instance.data.values()) {
+            if (lec.isOverlapClassroom(lecture)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

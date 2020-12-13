@@ -1,24 +1,46 @@
 package datatype;
 
-import database.DataBase;
-import database.EnrolmentLectureDataBase;
+import database.LectureDataBase;
 
 import java.util.ArrayList;
 
 public class Lecture implements Cloneable, ICloneable<Lecture> {
-    private final String lectureId;
+    private String lectureId;
     private final String professorId;
     private final String professorName;
     private final Subject subject;
-    private int credit;             // 학점
+    private final int credit;             // 학점
     private int seatsLimit;
     private String classroom;
     private ArrayList<ClassTime> classTimes;
 
+    /*
+     lectureId가 초기화되지 않는 생성자로 Professor가 강의를 등록하고자 할 때 사용한다.
+     lectureId가 초기화되지 않은 객체는 유효하지 않은 강의로 인식되며 강의가 정상적으로 등록되면 lectureId가 초기화된다.
+     */
+    public Lecture(String professorId, String professorName, Subject subject,
+                   int credit, int seatsLimit, String classroom, ArrayList<ClassTime> classTimes) {
+        assert credit > 0 : "datatype.Lecture credit must be higher than 0";
+        assert seatsLimit > 0 : "datatype.Lecture credit must be higher than 0";
+        assert classTimes != null : "datatype.Lecture classTimes must be create out of class";
+        assert classTimes.size() != 0 : "datatype.Lecture classTimes size must be at least 1";
+
+        this.professorId = professorId;
+        this.professorName = professorName;
+        this.subject = subject;
+        this.credit = credit;
+        this.seatsLimit = seatsLimit;
+        this.classroom = classroom;
+        this.classTimes = classTimes;
+    }
+
+    // lectureId를 초기화하여 유효한 강의 객체를 생성한다. DataBase에서 csv를 읽어 객체를 생성할 때 사용한다.
     public Lecture(String lectureId, String professorId, String professorName, Subject subject,
                    int credit, int seatsLimit, String classroom, ArrayList<ClassTime> classTimes) {
         assert credit > 0 : "datatype.Lecture credit must be higher than 0";
         assert seatsLimit > 0 : "datatype.Lecture credit must be higher than 0";
+        assert classTimes != null : "datatype.Lecture classTimes must be create out of class";
+        assert classTimes.size() != 0 : "datatype.Lecture classTimes size must be at least 1";
 
         this.lectureId = lectureId;
         this.professorId = professorId;
@@ -30,6 +52,17 @@ public class Lecture implements Cloneable, ICloneable<Lecture> {
         this.classTimes = classTimes;
     }
 
+    public boolean isValid() {
+        if (this.lectureId == null) {
+            return false;    // EnrolmentManager 클래스에게 강의 번호를 부여받지 못한 객체는 유효하지 않은 개체로 판단한다.
+        }
+        return LectureDataBase.getDB().selectOrNull(this.lectureId) != null;  // DB에 존재하지 않아도 유효하지 않은 객체이다.
+    }
+
+    public void setLectureId(String lectureId) {
+        assert !isValid() : "datatype.Lecture fail set lecture id: is valid lecture";
+        this.lectureId = lectureId;
+    }
 
     public void setSeatsLimit(int seatsLimit) {
         assert seatsLimit > 0 : "datatype.Lecture credit must be higher than 0";
@@ -55,6 +88,19 @@ public class Lecture implements Cloneable, ICloneable<Lecture> {
             }
         }
 
+        return false;
+    }
+
+    public boolean isOverlapClassroom(Lecture other) {
+        if (this.classroom.equals(other.classroom)) {
+            for (ClassTime myTime : this.classTimes) {
+                for (ClassTime otherTime: other.classTimes) {
+                    if (myTime.isOverlapTime(otherTime)) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -92,12 +138,6 @@ public class Lecture implements Cloneable, ICloneable<Lecture> {
 
     public String getClassroom() {
         return classroom;
-    }
-
-    public int getRemainingSeats() {
-        DataBase<ArrayList<String>> enrolDB = EnrolmentLectureDataBase.getDB();
-        ArrayList<String> students = enrolDB.selectOrNull(this.lectureId);
-        return this.seatsLimit - students.size();
     }
 
     @Override    // ICloneable<Lecture>
