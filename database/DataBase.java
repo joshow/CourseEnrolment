@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class DataBase<T> {
     final HashMap<String, T> data;
-    private final ICsvUpdater<T> csvUpdater;    // 데이터 타입 클래스를 csv 표의 한 행으로 출력 할 수 있다면 updataCSV()도 추상화 가능
+    private final ICsvUpdater<T> csvUpdater;
     private final ISelector<T> selector;
 
     @SuppressWarnings("unchecked")
@@ -39,20 +39,13 @@ public class DataBase<T> {
         return data.containsKey(uniqueKey);
     }
 
-//  public boolean updateElement(String uniqueKey, String elementCode, String element) {
-//      return false;
-//  }
-
-    public boolean add(String uniqueKey, T t) {
+    // 데이터베이스에 아이템을 추가/갱신하는 메소드
+    public void put(String uniqueKey, T t) {
         assert uniqueKey != null;
         assert t != null;
 
-        if (data.containsKey(uniqueKey)) {
-            return false;
-        }
-
         data.put(uniqueKey, t);
-        return true;
+        csvUpdater.updateCSV(data);
     }
 
     public boolean delete(String uniqueKey) {
@@ -63,6 +56,10 @@ public class DataBase<T> {
         data.remove(uniqueKey);
         csvUpdater.updateCSV(data);
         return true;
+    }
+
+    public void updateCSV() {
+        csvUpdater.updateCSV(data);
     }
 
     /* function pointer interface */
