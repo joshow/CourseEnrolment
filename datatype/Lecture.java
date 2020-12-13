@@ -1,36 +1,39 @@
 package datatype;
 
+import database.DataBase;
+import database.EnrolmentLectureDataBase;
+
 import java.util.ArrayList;
 
-public class Lecture implements Cloneable {
+public class Lecture implements Cloneable, ICloneable<Lecture> {
     private final String lectureId;
     private final String professorId;
     private final String professorName;
     private final Subject subject;
     private int credit;             // 학점
-    private int maxEnrolCount;
+    private int seatsLimit;
     private String classroom;
     private ArrayList<ClassTime> classTimes;
-    private final ArrayList<Ajouin> students = new ArrayList<>();  // TODO: DataBase에서 등록 학생 정보 가져오기
 
     public Lecture(String lectureId, String professorId, String professorName, Subject subject,
-                   int credit, int maxEnrolCount, String classroom, ArrayList<ClassTime> classTimes) {
+                   int credit, int seatsLimit, String classroom, ArrayList<ClassTime> classTimes) {
         assert credit > 0 : "datatype.Lecture credit must be higher than 0";
-        assert maxEnrolCount > 0 : "datatype.Lecture credit must be higher than 0";
+        assert seatsLimit > 0 : "datatype.Lecture credit must be higher than 0";
 
         this.lectureId = lectureId;
         this.professorId = professorId;
         this.professorName = professorName;
         this.subject = subject;
         this.credit = credit;
-        this.maxEnrolCount = maxEnrolCount;
+        this.seatsLimit = seatsLimit;
         this.classroom = classroom;
         this.classTimes = classTimes;
     }
 
-    public void setMaxEnrolCount(int maxEnrolCount) {
-        assert maxEnrolCount > 0 : "datatype.Lecture credit must be higher than 0";
-        this.maxEnrolCount = maxEnrolCount;
+
+    public void setSeatsLimit(int seatsLimit) {
+        assert seatsLimit > 0 : "datatype.Lecture credit must be higher than 0";
+        this.seatsLimit = seatsLimit;
     }
 
     public boolean addClassTime(ClassTime classTime) {
@@ -83,24 +86,26 @@ public class Lecture implements Cloneable {
         return credit;
     }
 
-    public int getMaxEnrolCount() {
-        return maxEnrolCount;
+    public int getSeatsLimit() {
+        return seatsLimit;
     }
 
     public String getClassroom() {
         return classroom;
     }
 
-    public ArrayList<Ajouin> getStudents() {
-        return students;
+    public int getRemainingSeats() {
+        DataBase<ArrayList<String>> enrolDB = EnrolmentLectureDataBase.getDB();
+        ArrayList<String> students = enrolDB.selectOrNull(this.lectureId);
+        return this.seatsLimit - students.size();
     }
 
-    @Override
-    public Object clone(){
+    @Override    // ICloneable<Lecture>
+    public Lecture clone(){
         Lecture lectureClone = null;
 
         try {
-            lectureClone = (Lecture) super.clone();
+            lectureClone = (Lecture) super.clone();   // Object clone() => Cloneable
         } catch (CloneNotSupportedException e) {
             assert false: "Fail lecture.clone()";
         }

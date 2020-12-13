@@ -1,5 +1,6 @@
 package database;
 
+import datatype.Ajouin;
 import datatype.ClassTime;
 import datatype.EDay;
 import datatype.Lecture;
@@ -13,18 +14,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class LectureDataBase extends DataBase {
-    private final String RESOURCE_PATH = "../resources/Lecture_List.csv";
-    private static LectureDataBase instance;
+public class LectureDataBase {
+    private static DataBase<Lecture> instance;
 
-    private HashMap<String, Lecture> data = new HashMap<>();
+    private LectureDataBase() { }
 
-    private LectureDataBase() {
-        super();
+    private static HashMap<String, Lecture> initializeData() {
+        String RESOURCE_PATH = "../resources/Lecture_List.csv";
+        HashMap<String, Lecture> data = new HashMap<>();
 
         BufferedReader reader;
         try {
@@ -63,10 +63,9 @@ public class LectureDataBase extends DataBase {
                     classTimes.add(new ClassTime(EDay.getEnumFrom(day), startOfClass, endOfClass));
                 }
 
-
-                AjouinDataBase personDb = AjouinDataBase.getInstance();
-                String professorName = personDb.selectOrNull(professorId).getName();
-                SubjectDataBase subjectDb = SubjectDataBase.getInstance();
+                DataBase<Ajouin> ajouinDb = AjouinDataBase.getDB();
+                String professorName = ajouinDb.selectOrNull(professorId).getName();
+                DataBase<Subject> subjectDb = SubjectDataBase.getDB();
                 Subject sb = subjectDb.selectOrNull(subjectCode);
                 assert sb != null: subjectCode;
 
@@ -80,39 +79,19 @@ public class LectureDataBase extends DataBase {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return data;
     }
 
-    public static LectureDataBase getInstance() {
+    public static DataBase<Lecture> getDB() {
         if (instance == null) {
-            instance = new LectureDataBase();
+            HashMap<String, Lecture> data = initializeData();
+            instance = new DataBase<>(data, LectureDataBase::updateCSV, true);
         }
         return instance;
     }
 
-    public Lecture selectOrNull(String uniqueKey) {
-        if (data.containsKey(uniqueKey)) {
-            return (Lecture) data.get(uniqueKey).clone();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean hasKey(String uniqueKey) {
-        return data.containsKey(uniqueKey);
-    }
-
-    @Override
-    public boolean delete(String uniqueKey) {
-        if (!data.containsKey(uniqueKey)) {
-            return false;
-        }
-
-        data.remove(uniqueKey);
-        updateCSV();
-        return true;
-    }
-
-    private void updateCSV() {
+    private static void updateCSV(HashMap<String, Lecture> data) {
         try {
             File file = new File("src/resources/Lecture_List_Update.csv"); // TODO: 실행파일 제작 후 이 경로가 유효한지 확인 필요
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()), "UTF8"));
@@ -125,7 +104,7 @@ public class LectureDataBase extends DataBase {
                 output.write(lecture.getProfessorId() + ',');
                 output.write(lecture.getSubject().getCode() + ',');
                 output.write(Integer.toString(lecture.getCredit()) + ',');
-                output.write(Integer.toString(lecture.getMaxEnrolCount()) + ',');
+                output.write(Integer.toString(lecture.getSeatsLimit()) + ',');
                 output.write(lecture.getClassroom());
 
                 ArrayList<ClassTime> classTimes = lecture.getClassTimes();
@@ -137,10 +116,8 @@ public class LectureDataBase extends DataBase {
             }
 
             output.close();
-        } catch(UnsupportedEncodingException uee) {
-            uee.printStackTrace();
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
+        } catch(IOException e) {
+            e.printStackTrace();
         }
     }
 }

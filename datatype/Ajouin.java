@@ -1,6 +1,6 @@
 package datatype;
 
-public abstract class Ajouin implements Cloneable {
+public abstract class Ajouin implements Cloneable, ICloneable<Ajouin> {
     private /*final*/ String id;
     private String name;
     private EDepartment major;
@@ -25,12 +25,12 @@ public abstract class Ajouin implements Cloneable {
         return major;
     }
 
-    @Override
-    public Object clone(){
-        Object ajouinClone = null;
+    @Override    // ICloneable<Ajouin>
+    public Ajouin clone(){
+        Ajouin ajouinClone = null;
 
         try {
-            ajouinClone = super.clone();
+            ajouinClone = (Ajouin) super.clone();   // Object clone() => Cloneable
         } catch (CloneNotSupportedException e) {
             assert false: "Fail ajouin.clone()";
         }

@@ -3,7 +3,7 @@ package datatype;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Subject implements Cloneable {
+public class Subject implements Cloneable, ICloneable<Subject> {
     private String name;
     private String code;
     private EClassification classification;
@@ -58,12 +58,12 @@ public class Subject implements Cloneable {
         return majorDepartments;
     }
 
-    @Override
-    public Object clone(){
-        Object subjectClone = null;
+    @Override    // ICloneable<Subject>
+    public Subject clone(){
+        Subject subjectClone = null;
 
         try {
-            subjectClone = super.clone();
+            subjectClone = (Subject) super.clone();    // Object clone() => Cloneable
         } catch (CloneNotSupportedException e) {
             assert false: "Fail Subject.clone()";
         }

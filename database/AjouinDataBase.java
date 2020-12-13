@@ -13,19 +13,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
-public class AjouinDataBase extends DataBase {
-    private final String RESOURCE_PATH = "../resources/Ajouin_List.csv";
-    private static AjouinDataBase instance;
+public class AjouinDataBase {
+    private static DataBase<Ajouin> instance;
+    private static final HashMap<String, String> passwords = new HashMap<>();
 
-    private HashMap<String, Ajouin> data = new HashMap<>();
-    private HashMap<String, String> passwords = new HashMap<>();
+    private AjouinDataBase() { }
 
-    private AjouinDataBase() {
-        super();
-
+    private static HashMap<String, Ajouin> initializeData() {
+        String RESOURCE_PATH = "../resources/Ajouin_List.csv";
+        HashMap<String, Ajouin> data = new HashMap<>();
         BufferedReader reader;
         try {
             InputStream iStream = AjouinDataBase.class.getResourceAsStream(RESOURCE_PATH);
@@ -66,50 +64,26 @@ public class AjouinDataBase extends DataBase {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return data;
     }
 
-    public static AjouinDataBase getInstance() {
+    public static DataBase<Ajouin> getDB() {
         if (instance == null) {
-            instance = new AjouinDataBase();
+            HashMap<String, Ajouin> data = initializeData();
+            instance = new DataBase<>(data, AjouinDataBase::updateCSV, true);
         }
         return instance;
     }
 
-    // 템플릿 프로그래밍으로 추상화 할 수 없까?
-    public Ajouin selectOrNull(String uniqueKey) {
-        if (data.containsKey(uniqueKey)) {
-            return (Ajouin) data.get(uniqueKey).clone();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean hasKey(String uniqueKey) {
-        return data.containsKey(uniqueKey);
-    }
-
-    @Override
-    public boolean delete(String uniqueKey) {
-        if (!data.containsKey(uniqueKey)) {
-            return false;
-        }
-
-        data.remove(uniqueKey);
-        updateCSV();
-        return true;
-    }
-
-    public boolean isValidLoginInfo(String id, String pw) {
+    public static boolean isValidLoginInfo(String id, String pw) {
         if (passwords.containsKey(id)) {
-            if (passwords.get(id).equals(pw)) {
-                return true;
-            }
-            return false;
+            return passwords.get(id).equals(pw);
         }
         return false;
     }
 
-    private void updateCSV() {
+    private static void updateCSV(HashMap<String, Ajouin> data) {
         try {
             File file = new File("src/resources/Ajouin_List_Update.csv"); // TODO: 실행파일 제작 후 이 경로가 유효한지 확인 필요
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()), "UTF8"));
@@ -126,10 +100,8 @@ public class AjouinDataBase extends DataBase {
             }
 
             output.close();
-        } catch(UnsupportedEncodingException uee) {
-            uee.printStackTrace();
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
+        } catch(IOException e) {
+            e.printStackTrace();
         }
     }
 }

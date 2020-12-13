@@ -30,7 +30,7 @@ package datatype;/*
     27 - 21:00 ~ 21:30
     28 - 21:30 ~ 22:00
 */
-// ClassTime 은 immutable 클래스이다.
+// ClassTime 은 immutable 클래스다.
 public class ClassTime {
     private EDay day;
     private int startOfClass;

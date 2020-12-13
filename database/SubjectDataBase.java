@@ -12,18 +12,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SubjectDataBase extends DataBase {
-    private final String RESOURCE_PATH = "../resources/Subject_List.csv";
-    private static SubjectDataBase instance;
+public class SubjectDataBase {
+    private static DataBase<Subject> instance;
 
-    private HashMap<String, Subject> data = new HashMap<>();
+    private SubjectDataBase() { }  // hide
 
-    private SubjectDataBase() {
-        super();
+    private static HashMap<String, Subject> initializeData() {
+        String RESOURCE_PATH = "../resources/Subject_List.csv";
+        HashMap<String, Subject> data = new HashMap<>();
 
         BufferedReader reader;
         try {
@@ -66,40 +65,19 @@ public class SubjectDataBase extends DataBase {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return data;
     }
 
-    public static SubjectDataBase getInstance() {
+    public static DataBase<Subject> getDB() {
         if (instance == null) {
-            instance = new SubjectDataBase();
+            HashMap<String, Subject> data = initializeData();
+            instance = new DataBase<>(data, SubjectDataBase::updateCSV, true);
         }
         return instance;
     }
 
-    // 템플릿 프로그래밍으로 추상화 할 수 없까?
-    public Subject selectOrNull(String uniqueKey) {
-        if (data.containsKey(uniqueKey)) {
-            return (Subject) data.get(uniqueKey).clone();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean hasKey(String uniqueKey) {
-        return data.containsKey(uniqueKey);
-    }
-
-    @Override
-    public boolean delete(String uniqueKey) {
-        if (!data.containsKey(uniqueKey)) {
-            return false;
-        }
-
-        data.remove(uniqueKey);
-        updateCSV();
-        return true;
-    }
-
-    private void updateCSV() {
+    private static void updateCSV(HashMap<String, Subject> data) {
         try {
             File file = new File("src/resources/Subject_List_Update.csv"); // TODO: 실행파일 제작 후 이 경로가 유효한지 확인 필요
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()), "UTF8"));
@@ -123,10 +101,8 @@ public class SubjectDataBase extends DataBase {
             }
 
             output.close();
-        } catch(UnsupportedEncodingException uee) {
-            uee.printStackTrace();
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
+        } catch(IOException e) {
+            e.printStackTrace();
         }
     }
 }
