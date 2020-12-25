@@ -53,14 +53,19 @@ public class EnrolmentManager {
         if (enrolledLectures == null) {
             enrolledLectures = new ArrayList<>();
         } else {
-            // TODO : 학생 본인 시간표와 겹치는지 확인 필요
-            // 학생의 학점이 부족하지 않은지 & 이미 신청한 강의인지 확인
+            // 학점이 부족하지 않은지 확인 & 이미 신청한 강의인지 & 본인 시간표와 겹치는지 확인
             int totalCredit = 0;
             for (String enrolledLectureId : enrolledLectures) {
                 if (lecture.getLectureId().equals(enrolledLectureId)) {
                     return EEnrolmentState.FAIL_ENROLLED_LECTURE;
                 }
-                totalCredit += DB_LECTURE.selectOrNull(enrolledLectureId).getCredit();
+
+                Lecture enrolledLecture = DB_LECTURE.selectOrNull(enrolledLectureId);
+                assert enrolledLecture != null;
+                if (enrolledLecture.isOverlapClassTime(lecture)) {
+                    return EEnrolmentState.FAIL_OVERLAP_CLASS_TIME;
+                }
+                totalCredit += enrolledLecture.getCredit();
             }
 
             if (totalCredit + lecture.getCredit() > Student.MAX_CREDIT) {
@@ -71,13 +76,17 @@ public class EnrolmentManager {
         // 여석이 남았는지 확인
         ArrayList<String> enrolledStudents = DB_ENROL_LECTURE.selectOrNull(lectureId);
         assert enrolledStudents != null;
-        if (lecture.getSeatsLimit() >= enrolledStudents.size()) {
+        if (lecture.getSeatsLimit() <= enrolledStudents.size()) {
             return EEnrolmentState.FAIL_NO_MORE_REMAIN_SEAT;
         }
 
         // 학생이 수강신청한 강의 목록을 갱신
         enrolledLectures.add(lectureId);
-        DB_ENROL_STUDENT.updateCSV();
+        if (enrolledLectures.size() == 1) {     // 처음 등록하는 강의인 경우
+            DB_ENROL_STUDENT.put(studentId, enrolledLectures);
+        } else {
+            DB_ENROL_STUDENT.updateCSV();
+        }
 
         // 강의에 수강신청한 학생 목록을 갱신
         enrolledStudents.add(studentId);
@@ -136,8 +145,19 @@ public class EnrolmentManager {
         } else if (ajouin.getIdentity() != EAjouinIdentity.PROFESSOR) {  // 교수의 ID가 아닌 경우
             return EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
         }
-
         Professor professor = (Professor) ajouin;
+
+        ArrayList<String> enrolledLectures = DB_ENROL_PROFESSOR.selectOrNull(professorId);
+        if (enrolledLectures == null) {     // 처음 강의를 등록하는 경우
+            enrolledLectures = new ArrayList<>();
+        } else {
+            // 교수의 기존 강의 시간과 겹치지 않는지 확인
+            for (String enrolledLectureId : enrolledLectures) {
+                if (DB_LECTURE.selectOrNull(enrolledLectureId).isOverlapClassTime(lecture)) {
+                    return EEnrolmentState.FAIL_OVERLAP_CLASS_TIME;
+                }
+            }
+        }
 
         if (!LectureDataBase.canAdd(lecture)) {
             return EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
@@ -149,13 +169,10 @@ public class EnrolmentManager {
         DB_LECTURE.put(id, lecture);
 
         // 교수가 등록한 강의 목록을 갱신
-        ArrayList<String> enrolledLectures = DB_ENROL_PROFESSOR.selectOrNull(professorId);
-        if (enrolledLectures == null) {     // 처음 등록하는 강의인 경우
-            enrolledLectures = new ArrayList<>();
-            enrolledLectures.add(id);
+        enrolledLectures.add(id);
+        if (enrolledLectures.size() == 1) {     // 처음 등록하는 강의인 경우
             DB_ENROL_PROFESSOR.put(id, enrolledLectures);
         } else {
-            enrolledLectures.add(id);
             DB_ENROL_PROFESSOR.updateCSV();
         }
 
@@ -167,13 +184,17 @@ public class EnrolmentManager {
 
     // 강의 삭제
     public EEnrolmentState cancelLectureFromProfessor(String professorId, String lectureId) {
+        Lecture lecture = DB_LECTURE.selectOrNull(lectureId);
+        if (lecture == null) {    // 없는 과목 ID인 경우
+            return EEnrolmentState.FAIL_INVALID_ID;
+        }
+
         Ajouin ajouin = DB_AJOUIN.selectOrNull(professorId);
         if (ajouin == null) {    // 없는 아주인 ID인 경우
             return EEnrolmentState.FAIL_INVALID_ID;
         } else if (ajouin.getIdentity() != EAjouinIdentity.PROFESSOR) {  // 교수의 ID가 아닌 경우
             return EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
         }
-
         Professor professor = (Professor) ajouin;
 
         ArrayList<String> enrolledLectures = DB_ENROL_PROFESSOR.selectOrNull(professorId);
@@ -181,7 +202,7 @@ public class EnrolmentManager {
             return EEnrolmentState.FAIL_NONE_ENROLLED_LECTURE;            // 교수가 등록하지 않은 강의의 경우
         }
 
-        // 강의 DB에서 강의를 제어
+        // 강의 DB에서 강의를 제거
         DB_LECTURE.delete(lectureId);
 
         // 교수가 등록한 강의 목록을 제거
@@ -189,7 +210,16 @@ public class EnrolmentManager {
         if (enrolledLectures.size() == 0) {
             DB_ENROL_PROFESSOR.delete(professorId);
         } else {
-            DB_ENROL_PROFESSOR.updateCSV();
+            DB_ENROL_PROFESSOR.put(professorId, enrolledLectures);
+        }
+
+        // 학생들의 신청한 강의 목록에서 제거
+        ArrayList<String> enrolledStudents = DB_ENROL_LECTURE.selectOrNull(lectureId);
+        assert enrolledStudents != null;
+        for (String studentId : enrolledStudents) {
+            ArrayList<String> studentEnrolledLectures = DB_ENROL_STUDENT.selectOrNull(studentId);
+            studentEnrolledLectures.remove(lectureId);
+            DB_ENROL_STUDENT.put(studentId, studentEnrolledLectures);
         }
 
         // 강의에 수강신청한 학생 목록 테이블을 제거

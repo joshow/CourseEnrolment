@@ -74,12 +74,13 @@ public class TestProgram {
         DataBase<Subject> DB_subject = SubjectDataBase.getDB();
         DataBase<Lecture> DB_lecture = LectureDataBase.getDB();
 
+        // 강의 등록 테스트
         Lecture lec = DB_lecture.selectOrNull("20FGHE");
         assert em.enrolLectureFromProfessor("123456778", lec) == EEnrolmentState.FAIL_ENROLLED_LECTURE;
 
         ArrayList<ClassTime> cts = new ArrayList<>();
-        cts.add(new ClassTime(EDay.MON, 9, 11));
-        cts.add(new ClassTime(EDay.WED, 9, 11));
+        cts.add(new ClassTime(EDay.TUE, 9, 11));
+        cts.add(new ClassTime(EDay.THU, 9, 11));
 
         lec = new Lecture("201422949", DB_ajouin.selectOrNull("201422949").getName(), DB_subject.selectOrNull("F071"), 3, 30, "원999", cts);
         assert em.enrolLectureFromProfessor("201422949", lec) == EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
@@ -89,8 +90,85 @@ public class TestProgram {
 
         assert em.enrolLectureFromProfessor("20081588", lec) == EEnrolmentState.SUCCESS;
 
-        // TODO: 강의 등록 중 FAIL_OVERLAP_CLASSROOM 테스트
-        // TODO: 강의 취소 및 수강신청/취소 테스트
+        lec = new Lecture("20081588", DB_ajouin.selectOrNull("20081588").getName(), DB_subject.selectOrNull("C025"), 3, 30, "원999", cts);
+        assert em.enrolLectureFromProfessor("20081588", lec) == EEnrolmentState.FAIL_OVERLAP_CLASS_TIME;
+
+        // 20FKRE,20051423,C015,3,60,원432,월12,월14,수12,수14
+        ArrayList<ClassTime> cts2 = new ArrayList<>();
+        cts2.add(new ClassTime(EDay.MON, 12, 14));
+        cts2.add(new ClassTime(EDay.WED, 12, 14));
+        lec = new Lecture("20091548", DB_ajouin.selectOrNull("20091548").getName(), DB_subject.selectOrNull("C015"), 5, 40, "원432", cts2);
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.clear();
+        cts2.add(new ClassTime(EDay.MON, 10, 12));
+        cts2.add(new ClassTime(EDay.WED, 12, 14));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.clear();
+        cts2.add(new ClassTime(EDay.MON, 11, 13));
+        cts2.add(new ClassTime(EDay.WED, 10, 12));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.clear();
+        cts2.add(new ClassTime(EDay.MON, 1, 2));
+        cts2.add(new ClassTime(EDay.WED, 11, 13));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.clear();
+        cts2.add(new ClassTime(EDay.MON, 1, 2));
+        cts2.add(new ClassTime(EDay.WED, 11, 15));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.add(new ClassTime(EDay.MON, 1, 2));
+        cts2.add(new ClassTime(EDay.WED, 14, 15));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.add(new ClassTime(EDay.MON, 13, 15));
+        cts2.add(new ClassTime(EDay.WED, 11, 15));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
+        cts2.clear();
+        cts2.add(new ClassTime(EDay.MON, 10, 12));
+        cts2.add(new ClassTime(EDay.WED, 14, 15));
+        assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.SUCCESS;
+        // 동일한 시간 다른 장소 => 성공
+        cts2 = new ArrayList<>();
+        cts2.add(new ClassTime(EDay.MON, 10, 12));
+        cts2.add(new ClassTime(EDay.WED, 14, 15));
+        lec = new Lecture("20138469", DB_ajouin.selectOrNull("20138469").getName(), DB_subject.selectOrNull("C015"), 5, 40, "팔888", cts2);
+        assert em.enrolLectureFromProfessor("20138469", lec) == EEnrolmentState.SUCCESS;
+
+        // 강의 삭제 테스트
+        assert em.cancelLectureFromProfessor("20138469", "DKSIEJF") == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.cancelLectureFromProfessor("2013846", lec.getLectureId()) == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.cancelLectureFromProfessor("201520659", lec.getLectureId()) == EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
+
+        assert em.cancelLectureFromProfessor("20138469", "20DFBD") == EEnrolmentState.FAIL_NONE_ENROLLED_LECTURE;
+        assert em.cancelLectureFromProfessor("20138469", lec.getLectureId()) == EEnrolmentState.SUCCESS;
+        assert em.cancelLectureFromProfessor("20138469", lec.getLectureId()) == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.cancelLectureFromProfessor("20081588", "20APQZ") == EEnrolmentState.SUCCESS;
+
+
+        // 수강 신청 & 취소 테스트
+        assert em.enrolLectureFromStudent("20199900", "20DBFZ") == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.enrolLectureFromStudent("201520659", "18DBFZ") == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.enrolLectureFromStudent("20132148", "20DBFZ") == EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
+        assert em.enrolLectureFromStudent("201520659", "20DBFZ") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20DBFZ") == EEnrolmentState.FAIL_ENROLLED_LECTURE;
+        assert em.enrolLectureFromStudent("201520659", "20JNHJ") == EEnrolmentState.FAIL_OVERLAP_CLASS_TIME;
+        assert em.enrolLectureFromStudent("201520659", "20FBDS") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20NFTB") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20FKRE") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20DFBD") == EEnrolmentState.SUCCESS;
+
+        assert em.enrolLectureFromStudent("201520659", "20FYZE") == EEnrolmentState.SUCCESS;
+
+        assert em.cancelLectureFromStudent("20142294", "20FYZE") == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.cancelLectureFromStudent("201422949", "10ZZZZ") == EEnrolmentState.FAIL_INVALID_ID;
+        assert em.cancelLectureFromStudent("20091548", "20FYZE") == EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
+        assert em.cancelLectureFromStudent("201520659", "20DZSW") == EEnrolmentState.FAIL_NONE_ENROLLED_LECTURE;
+        assert em.cancelLectureFromStudent("201422949", "20FYZE") == EEnrolmentState.FAIL_NONE_ENROLLED_LECTURE;
+
+        assert em.enrolLectureFromStudent("201422949", "20FYZE") == EEnrolmentState.FAIL_NO_MORE_REMAIN_SEAT;
+        assert em.cancelLectureFromStudent("201520659", "20FYZE") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201422949", "20FYZE") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20FYZE") == EEnrolmentState.FAIL_NO_MORE_REMAIN_SEAT;
+
+        assert em.enrolLectureFromStudent("201520659", "20LHGG") == EEnrolmentState.FAIL_NO_MORE_CREDIT;
     }
 
 

@@ -44,8 +44,9 @@ public class ClassTime {
     }
 
     public boolean isOverlapTime(ClassTime other) {
-        return this.startOfClass <= other.startOfClass && other.startOfClass < this.endOfClass
-                || other.startOfClass <= this.startOfClass && this.startOfClass < other.endOfClass;
+        return this.day == other.day
+                && (this.startOfClass <= other.startOfClass && other.startOfClass < this.endOfClass
+                    || other.startOfClass <= this.startOfClass && this.startOfClass < other.endOfClass);
     }
 
     public EDay getDay() {
