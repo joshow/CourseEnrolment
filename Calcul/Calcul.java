@@ -85,7 +85,7 @@ public class Calcul extends JFrame implements ActionListener, ItemListener {
 		setTitle("학점계산기");
 		setBounds(screenSize.width/2-100, screenSize.height/2-335, 200, 670);
 		setVisible(true);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);		
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);		
 	}
 	
 	@Override
