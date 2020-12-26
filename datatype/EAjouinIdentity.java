@@ -2,5 +2,10 @@ package datatype;
 
 public enum EAjouinIdentity {
     PROFESSOR,
-    STUDENT
+    STUDENT;
+
+    @Override
+    public String toString() {
+        return this == PROFESSOR ? "교수" : "학생";
+    }
 }
