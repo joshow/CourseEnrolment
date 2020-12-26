@@ -89,6 +89,7 @@ public class Login extends JFrame{
 		setLocationRelativeTo(null);
 		setResizable(true);
 		img.setVisible(true);
+		setTitle("아주대학교 정통대 수강신청 로그인");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
