@@ -6,6 +6,9 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
+import javax.swing.JTabbedPane;
+
+
 
 import Calcul.Calcul;
 import database.AjouinDataBase;
@@ -43,15 +46,38 @@ public class StuLectureList extends JFrame {
         setSize(1500, 1000);
         setLocationRelativeTo(null); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panel = new JPanel();
+      
+        JPanel jp1 = new JPanel();
+        JPanel jp2 = new JPanel();
+
+
+
+
+
+
+    
+        JPanel panel = new JPanel(); //수강신청 쪽 패널
         JButton btn1 = new JButton("수강 등록");
         JButton btn2 = new JButton("수강 취소");
         JButton btn3 = new JButton("학점 계산기");
-        
+        JButton btn4 = new JButton("신청내역 확인");
         panel.add(btn1);
         panel.add(btn2);
         panel.add(btn3);
+        panel.add(btn4);
         this.add(panel);
+     
+        
+
+
+
+
+
+
+
+
+
+        
 
        btn1.addActionListener( new ActionListener(){
             
@@ -80,6 +106,14 @@ public class StuLectureList extends JFrame {
            }
            
        });
+       btn4.addActionListener( new ActionListener(){
+           
+           public void actionPerformed(ActionEvent e) {
+        	   
+                    
+           }
+           
+       });
 
 
            
@@ -88,6 +122,7 @@ public class StuLectureList extends JFrame {
 
 
         setVisible(true);
+
     }
 }// 메인 프레임
 
