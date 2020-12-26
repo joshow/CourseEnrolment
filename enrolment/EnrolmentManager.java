@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class EnrolmentManager {
-    public final static int LECTURE_ID_LENGTH = 6;
-
     private final DataBase<Ajouin> DB_AJOUIN;
     private final DataBase<Lecture> DB_LECTURE;
     private final DataBase<ArrayList<String>> DB_ENROL_STUDENT;
@@ -229,9 +227,27 @@ public class EnrolmentManager {
     }
 
     // 강의 수정
-    public EEnrolmentState editLectureFromProfessor() {
-        // TODO: 교수 강의 수정 구현
-        return EEnrolmentState.FAIL;
+    // 메소드 호출 전 DB에서 기존 Lecture 객체를 불러와 수정한 뒤 메소드의 매개변수로 사용한다.
+    public EEnrolmentState editLectureFromProfessor(String professorId, Lecture editedLecture) {
+        if (!editedLecture.isValid()) {
+            return EEnrolmentState.FAIL_INVALID_LECTURE;
+        }
+
+        Ajouin ajouin = DB_AJOUIN.selectOrNull(professorId);
+        if (ajouin == null) {    // 없는 아주인 ID인 경우
+            return EEnrolmentState.FAIL_INVALID_ID;
+        } else if (ajouin.getIdentity() != EAjouinIdentity.PROFESSOR) {  // 교수의 ID가 아닌 경우
+            return EEnrolmentState.FAIL_WRONG_IDENTITY_ID;
+        }
+        Professor professor = (Professor) ajouin;
+
+        if (!professorId.equals(editedLecture.getProfessorId())) {    // 해당 교수가 등록한 강의가 아닌 경우
+            return EEnrolmentState.FAIL_NONE_ENROLLED_LECTURE;
+        }
+
+        DB_LECTURE.put(professorId, editedLecture);
+
+        return EEnrolmentState.SUCCESS;
     }
 
     private String generateLectureId() {
