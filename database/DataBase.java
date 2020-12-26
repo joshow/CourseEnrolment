@@ -2,6 +2,7 @@ package database;
 
 import datatype.ICloneable;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class DataBase<T> {
@@ -37,6 +38,10 @@ public class DataBase<T> {
 
     public boolean hasKey(String uniqueKey) {
         return data.containsKey(uniqueKey);
+    }
+
+    public Collection<T> getValues() {
+        return data.values();
     }
 
     // 데이터베이스에 아이템을 추가/갱신하는 메소드
