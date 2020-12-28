@@ -14,12 +14,15 @@ import javax.imageio.*;
 
 public class Login extends JFrame{
 	public Login() {
+		AjouinDataBase.getDB();    // 사용자 정보 DB 로딩
+
         JPanel panel = new JPanel();		
 		JLabel label = new JLabel("학번 입력: ");
 		JLabel pswrd = new JLabel("비밀번호: ");
 
 		JTextField txtID = new JTextField(12);
 		JPasswordField txtPass = new JPasswordField(12);
+
 		JButton logBtn = new JButton("로그인");
 
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 8, 0, 8));

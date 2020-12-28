@@ -3,20 +3,20 @@ package GUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 
 import Calcul.Calcul;
 import database.AjouinDataBase;
 import database.DataBase;
+import database.EnrolmentStudentDataBase;
 import database.LectureDataBase;
-import database.SubjectDataBase;
-import datatype.Ajouin;
 import datatype.ClassTime;
 import datatype.Lecture;
 import datatype.Student;
-import datatype.Subject;
 import enrolment.EEnrolmentState;
 import enrolment.EnrolmentManager;
 
@@ -24,31 +24,41 @@ import enrolment.EnrolmentManager;
 public class StuLectureList extends JFrame {
     private static final int LECTURE_TABLE_COLUMN_COUNT = 8;
 
+    Calcul calculFrame;
+
     private Student student;
     private JTable lectureTable;
     private String[] lectureCodes;
+    private ArrayList<String> enrolledLectureCodes;
 
-    public StuLectureList(Student student){
+    public StuLectureList(Student student) {
         super();
         assert student != null;
 
         this.student = student;
 
-        DataBase<Ajouin> DB_AJOUIN = AjouinDataBase.getDB();
-        DataBase<Subject> DB_SUBJECT = SubjectDataBase.getDB();
         DataBase<Lecture> DB_LECTURE = LectureDataBase.getDB();
-        
+
+        // 기본 프레임 세팅
         setTitle("수강신청");
         setSize(1070, 560);
         setLocationRelativeTo(null); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panel = new JPanel();
 
+        JPanel panel = new JPanel();    // 실질적으로 프레임 내부를 채우는 Panel
 
+        // 강의 목록 테이블 준비
         String[] col = { "강의명", "과목코드", "담당교수", "학점", "여석","총인원", "강의실","강의시간" };   //필드명(열제목) 지정
-
         assert col.length == LECTURE_TABLE_COLUMN_COUNT;
 
+        // 이미 신청한 과목 목록을 멤버변수에 저장해둔다.
+        enrolledLectureCodes = new ArrayList<>();
+        ArrayList<String> eli = EnrolmentStudentDataBase.getDB().selectOrNull(student.getId());
+        if (eli != null) {
+            enrolledLectureCodes.addAll(eli);
+        }
+
+        // 테이블을 강의 목록으로 초기화
         Collection<Lecture> lectures = DB_LECTURE.getValues();
         Object[][] lectureTableRows = new Object[lectures.size()][LECTURE_TABLE_COLUMN_COUNT];
         this.lectureCodes = new String[lectures.size()];
@@ -59,9 +69,6 @@ public class StuLectureList extends JFrame {
             lectureTableRows[i++] = createLectureTableRow(lecture);
         }
 
-        DefaultTableCellRenderer cellAlignCenter = new DefaultTableCellRenderer();
-        cellAlignCenter.setHorizontalAlignment(SwingConstants.CENTER);
-
         JLabel tableTitle = new JLabel(" < 강의 목록 > ");
         lectureTable = new JTable(lectureTableRows, col) {    // 강의 목록 테이블
             public boolean isCellEditable(int row, int column) {
@@ -69,19 +76,18 @@ public class StuLectureList extends JFrame {
             }
         };
 
+        // 신청된 강의의 색을 지정하기 위해 Renderer 클래스를 새로 지정 세팅한다.
+        DefaultTableCellRenderer lectureTableRenderer = new LectureTableCellRenderer();
+        lectureTableRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        lectureTable.setDefaultRenderer(Object.class, lectureTableRenderer);
+
         lectureTable.getColumn("강의명").setPreferredWidth(70);
         lectureTable.getColumn("과목코드").setPreferredWidth(5);
-        lectureTable.getColumn("과목코드").setCellRenderer(cellAlignCenter);
         lectureTable.getColumn("담당교수").setPreferredWidth(5);
-        lectureTable.getColumn("담당교수").setCellRenderer(cellAlignCenter);
         lectureTable.getColumn("학점").setPreferredWidth(1);
-        lectureTable.getColumn("학점").setCellRenderer(cellAlignCenter);
         lectureTable.getColumn("여석").setPreferredWidth(1);
-        lectureTable.getColumn("여석").setCellRenderer(cellAlignCenter);
         lectureTable.getColumn("총인원").setPreferredWidth(1);
-        lectureTable.getColumn("총인원").setCellRenderer(cellAlignCenter);
         lectureTable.getColumn("강의실").setPreferredWidth(5);
-        lectureTable.getColumn("강의실").setCellRenderer(cellAlignCenter);
         lectureTable.getColumn("강의시간").setPreferredWidth(200);
 
         lectureTable.setRowHeight(18);
@@ -121,53 +127,97 @@ public class StuLectureList extends JFrame {
 
 
 
-
-        
-
         // 버튼 액션 리스너 추가
         enrolButton.addActionListener( new ActionListener(){
-            
             public void actionPerformed(ActionEvent e) {
+                if (lectureTable.getSelectedRowCount() != 1) {
+                    return;
+                }
+
                 int selectedRowIndex = lectureTable.getSelectedRow();
-                String lectureCode = (String) lectureTable.getValueAt(selectedRowIndex, 1);
                 EnrolmentManager em = new EnrolmentManager();
 
                 EEnrolmentState result = em.enrolLectureFromStudent(student.getId(), lectureCodes[selectedRowIndex]);
 
                 if (result == EEnrolmentState.SUCCESS) {
+                    enrolledLectureCodes.add(lectureCodes[selectedRowIndex]);
                     JDialog message = new JDialog();
                     String lectureName = (String) lectureTable.getValueAt(selectedRowIndex, 0);
                     String professorName = (String) lectureTable.getValueAt(selectedRowIndex, 2);
-                    JOptionPane.showMessageDialog(message, professorName + "교수님의 " + lectureName + " 강의 등록에 성공하였습니다!");
+                    JOptionPane.showMessageDialog(message, professorName + "교수님의 " + lectureName + " 강의 신청에 성공하였습니다!");
                     return;
-                } else {
-                    JDialog message = new JDialog();
-                    JOptionPane.showMessageDialog(message, "실패!\n" + student.getId() + "\n" + lectureCode);
                 }
 
-                // TODO: 실패시 안내 메시지 띄우기
+                // 수강신청 실패시 안내 메시지 출력
+                String failMessage = "";
+                if (result == EEnrolmentState.FAIL_NO_MORE_CREDIT) {
+                    failMessage = "실패. 학점이 부족합니다.";
+                } else if (result == EEnrolmentState.FAIL_NO_MORE_REMAIN_SEAT) {
+                    failMessage = "실패. 여석이 부족합니다.";
+                } else if (result == EEnrolmentState.FAIL_ENROLLED_LECTURE) {
+                    failMessage = "이미 신청하신 과목 입니다.";
+                } else if (result == EEnrolmentState.FAIL_OVERLAP_CLASS_TIME) {
+                    failMessage = "실패. 이미 동일한 시간대에 신청하신 과목이 있습니다.";
+                } else {
+                    assert false;   // Impossible
+                }
 
-                assert result != EEnrolmentState.FAIL_INVALID_ID;
+                JDialog messageDialog = new JDialog();
+                JOptionPane.showMessageDialog(messageDialog, failMessage);
             }
         });
 
         cancelButton.addActionListener( new ActionListener(){
-           
-           public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
+                if (lectureTable.getSelectedRowCount() != 1) {
+                    return;
+                }
 
-                    
-           }
+                int selectedRowIndex = lectureTable.getSelectedRow();
+
+                // 신청되지 않은 과목은 수강 취소할 수 없음
+                if (!enrolledLectureCodes.contains(lectureCodes[selectedRowIndex])) {
+                    JDialog message = new JDialog();
+                    JOptionPane.showMessageDialog(message, "신청하지 않은 강의는 수강 취소 할 수 없습니다.");
+                    return;
+                }
+
+                EnrolmentManager em = new EnrolmentManager();
+
+                EEnrolmentState result = em.cancelLectureFromStudent(student.getId(), lectureCodes[selectedRowIndex]);
+
+                if (result == EEnrolmentState.SUCCESS) {
+                    enrolledLectureCodes.remove(lectureCodes[selectedRowIndex]);
+                    JDialog message = new JDialog();
+                    String lectureName = (String) lectureTable.getValueAt(selectedRowIndex, 0);
+                    String professorName = (String) lectureTable.getValueAt(selectedRowIndex, 2);
+                    JOptionPane.showMessageDialog(message, professorName + "교수님의 " + lectureName + " 강의 수강 취소에 성공하였습니다.");
+                    return;
+                }
+
+                // 수강 취소 실패시 안내 메시지 출력
+                String failMessage = "";
+                if (result == EEnrolmentState.FAIL_NONE_ENROLLED_LECTURE) {
+                    enrolledLectureCodes.remove(lectureCodes[selectedRowIndex]);
+                    failMessage = "신청하지 않은 강의는 수강취소 할 수 없습니다.";
+                } else {
+                    assert false;   // Impossible
+                }
+
+                JDialog messageDialog = new JDialog();
+                JOptionPane.showMessageDialog(messageDialog, failMessage);
+            }
         });
 
            
-    
+
         calculatorButton.addActionListener( new ActionListener(){
-           
             public void actionPerformed(ActionEvent e) {
-                new Calcul();
-                    
+                if (calculFrame == null) {
+                    calculFrame = new Calcul();
+                }
+                calculFrame.setVisible(!calculFrame.isVisible());    // 보이는 상태 토글
             }
-           
         });
 
         btn4.addActionListener( new ActionListener(){
@@ -180,15 +230,7 @@ public class StuLectureList extends JFrame {
         });
 
 
-           
-   
-
-
-
         setVisible(true);
-        
-
-    
     }
 
     private Object[] createLectureTableRow(Lecture lecture) {
@@ -209,6 +251,31 @@ public class StuLectureList extends JFrame {
         sb.delete(sb.length() - 3, sb.length());
         tableRow[7] = sb.toString();
         return tableRow;
+    }
+
+    // 코드 출처: https://blaseed.tistory.com/15
+    // getTableCellRendererComponent() 메소드를 오버라이드하여 셀의 배경색을 지정할 수 있다.
+    private class LectureTableCellRenderer extends DefaultTableCellRenderer {
+        private final Color BLACK_COLOR = new Color(0x0);
+        private final Color WHITE_COLOR = new Color(0xFFFFFF);
+        private final Color YELLOW_COLOR = new Color(252, 247, 135);
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (enrolledLectureCodes.contains(lectureCodes[row])) {    // 수강 신청한 강의의 경우
+                if (isSelected) {
+                    cell.setForeground(BLACK_COLOR);
+                } else {
+                    cell.setBackground(YELLOW_COLOR);
+                }
+            } else {
+                if (!isSelected) {
+                    cell.setBackground(WHITE_COLOR);
+                }
+            }
+            return cell;
+        }
     }
 }
 

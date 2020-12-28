@@ -39,11 +39,9 @@ public class Calcul extends JFrame implements ActionListener, ItemListener {
 	private Process process = new Process();
 	
 	public Calcul() {
-		
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");			
 		} catch(Exception e) {}
-					
 
 				
 		for(int i=0; i<10; i++) {
@@ -84,8 +82,8 @@ public class Calcul extends JFrame implements ActionListener, ItemListener {
 		Dimension screenSize = tk.getScreenSize();		
 		setTitle("학점계산기");
 		setBounds(screenSize.width/2-100, screenSize.height/2-335, 200, 670);
-		setVisible(true);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);		
+		//setVisible(true);
+		setDefaultCloseOperation(HIDE_ON_CLOSE);
 	}
 	
 	@Override
@@ -98,11 +96,8 @@ public class Calcul extends JFrame implements ActionListener, ItemListener {
 				JOptionPane.showMessageDialog(this, "입력값이 잘못되었습니다.");
 			}			
 		}
-		
-
-		
-
 	}
+
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if(e.getSource() == grade[0]) 
@@ -147,16 +142,4 @@ public class Calcul extends JFrame implements ActionListener, ItemListener {
 		if(e.getSource() == num[9]) 
 			setNum[9] = Integer.parseInt((String)num[9].getSelectedItem());
 	}
-
-
-
-
-
-		
-	
-
-	
 }
-	
-
-
