@@ -92,7 +92,7 @@ public abstract class EnrolmentDataBase {
         }
 
         try {
-            String path = "src" + csvPaths[index].substring(2, csvPaths[index].length() - 4) + "_Update.csv";
+            String path = "src" + csvPaths[index].substring(2, csvPaths[index].length() - 4) + ".csv";
             File file = new File(path); // TODO: 실행파일 제작 후에도 경로가 유효한지 확인 필요
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()), "UTF8"));
 
