@@ -122,8 +122,8 @@ public class TestProgram {
         cts2.add(new ClassTime(EDay.WED, 11, 15));
         assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.FAIL_OVERLAP_CLASSROOM;
         cts2.clear();
-        cts2.add(new ClassTime(EDay.MON, 10, 12));
-        cts2.add(new ClassTime(EDay.WED, 14, 15));
+        cts2.add(new ClassTime(EDay.MON, 9, 11));
+        cts2.add(new ClassTime(EDay.WED, 15, 16));
         assert em.enrolLectureFromProfessor("20091548", lec) == EEnrolmentState.SUCCESS;
         // 동일한 시간 다른 장소 => 성공
         cts2 = new ArrayList<>();
@@ -150,10 +150,10 @@ public class TestProgram {
         assert em.enrolLectureFromStudent("201520659", "20DBFZ") == EEnrolmentState.SUCCESS;
         assert em.enrolLectureFromStudent("201520659", "20DBFZ") == EEnrolmentState.FAIL_ENROLLED_LECTURE;
         assert em.enrolLectureFromStudent("201520659", "20JNHJ") == EEnrolmentState.FAIL_OVERLAP_CLASS_TIME;
-        assert em.enrolLectureFromStudent("201520659", "20FBDS") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20FGNA") == EEnrolmentState.SUCCESS;
         assert em.enrolLectureFromStudent("201520659", "20NFTB") == EEnrolmentState.SUCCESS;
-        assert em.enrolLectureFromStudent("201520659", "20FKRE") == EEnrolmentState.SUCCESS;
-        assert em.enrolLectureFromStudent("201520659", "20DFBD") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20BFBD") == EEnrolmentState.SUCCESS;
+        assert em.enrolLectureFromStudent("201520659", "20SVDC") == EEnrolmentState.SUCCESS;
 
         assert em.enrolLectureFromStudent("201520659", "20FYZE") == EEnrolmentState.SUCCESS;
 
@@ -168,8 +168,7 @@ public class TestProgram {
         assert em.enrolLectureFromStudent("201422949", "20FYZE") == EEnrolmentState.SUCCESS;
         assert em.enrolLectureFromStudent("201520659", "20FYZE") == EEnrolmentState.FAIL_NO_MORE_REMAIN_SEAT;
 
+        // total credit => 15  /  max credit => 19  /  20LHGG credit = > 5
         assert em.enrolLectureFromStudent("201520659", "20LHGG") == EEnrolmentState.FAIL_NO_MORE_CREDIT;
     }
-
-
 }
