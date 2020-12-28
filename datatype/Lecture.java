@@ -1,5 +1,6 @@
 package datatype;
 
+import database.EnrolmentLectureDataBase;
 import database.LectureDataBase;
 
 import java.util.ArrayList;
@@ -141,6 +142,10 @@ public class Lecture implements Cloneable, ICloneable<Lecture> {
 
     public int getSeatsLimit() {
         return seatsLimit;
+    }
+
+    public int getRemainSeat() {
+        return this.seatsLimit - EnrolmentLectureDataBase.getDB().selectOrNull(lectureId).size();
     }
 
     public String getClassroom() {
