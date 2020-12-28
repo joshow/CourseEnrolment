@@ -69,4 +69,13 @@ public class Subject implements Cloneable, ICloneable<Subject> {
         }
         return subjectClone;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(30);
+        sb.append(code);
+        sb.append(" - ");
+        sb.append(name);
+        return sb.toString();
+    }
 }

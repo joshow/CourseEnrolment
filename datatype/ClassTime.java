@@ -32,9 +32,12 @@ package datatype;/*
 */
 // ClassTime 은 immutable 클래스다.
 public class ClassTime {
-    private EDay day;
-    private int startOfClass;
-    private int endOfClass;
+    public final static int min = 1;
+    public final static int max = 28;
+
+    private final EDay day;
+    private final int startOfClass;
+    private final int endOfClass;
 
     public ClassTime(EDay day, int startOfClass, int endOfClass) {
         assert 0 < startOfClass && startOfClass < endOfClass && endOfClass < 29 : "Invalid Class Time";
@@ -45,8 +48,8 @@ public class ClassTime {
 
     public boolean isOverlapTime(ClassTime other) {
         return this.day == other.day
-                && (this.startOfClass <= other.startOfClass && other.startOfClass < this.endOfClass
-                    || other.startOfClass <= this.startOfClass && this.startOfClass < other.endOfClass);
+                && (this.startOfClass <= other.startOfClass && other.startOfClass <= this.endOfClass
+                    || other.startOfClass <= this.startOfClass && this.startOfClass <= other.endOfClass);
     }
 
     public EDay getDay() {
@@ -59,5 +62,28 @@ public class ClassTime {
 
     public int getEnd() {
         return endOfClass;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(20);
+        sb.append(this.day.toString());
+        sb.append(' ');
+        sb.append((startOfClass - 1) / 2 + 8);
+        sb.append(':');
+        if (startOfClass % 2 == 0) {
+            sb.append("30");
+        } else {
+            sb.append("00");
+        }
+        sb.append(" ~ ");
+        sb.append(endOfClass / 2 + 8);
+        sb.append(':');
+        if (endOfClass % 2 == 0) {
+            sb.append("00");
+        } else {
+            sb.append("30");
+        }
+        return sb.toString();
     }
 }
