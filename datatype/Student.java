@@ -23,7 +23,7 @@ public class Student extends Ajouin {
         DataBase<Lecture> DB_LECTURE = LectureDataBase.getDB();
         int totalCredit = 0;
         for (String lecId : enrolledLectureId) {
-            totalCredit += DB_LECTURE.selectOrNull("lecId").getCredit();
+            totalCredit += DB_LECTURE.selectOrNull(lecId).getCredit();
         }
 
         return totalCredit;

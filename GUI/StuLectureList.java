@@ -7,10 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 
 import Calcul.Calcul;
-import database.AjouinDataBase;
 import database.DataBase;
 import database.EnrolmentStudentDataBase;
 import database.LectureDataBase;
@@ -27,6 +25,7 @@ public class StuLectureList extends JFrame {
     Calcul calculFrame;
 
     private Student student;
+    private JLabel creditLabel;
     private JTable lectureTable;
     private String[] lectureCodes;
     private ArrayList<String> enrolledLectureCodes;
@@ -42,7 +41,8 @@ public class StuLectureList extends JFrame {
         // 기본 프레임 세팅
         setTitle("수강신청");
         setSize(1070, 560);
-        setLocationRelativeTo(null); 
+        setLocationRelativeTo(null);
+        setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();    // 실질적으로 프레임 내부를 채우는 Panel
@@ -108,18 +108,24 @@ public class StuLectureList extends JFrame {
         JButton enrolButton = new JButton("수강 등록");
         JButton cancelButton = new JButton("수강 취소");
         JButton calculatorButton = new JButton("학점 계산기");
-        JButton btn4 = new JButton("신청내역 확인");
+        JButton scheduleButton = new JButton("시간표 확인");
         panel.setLayout(null);    // 버튼 고정 레이아웃 해제
 
-        enrolButton.setBounds(835, 342, 90, 50);
-        cancelButton.setBounds(945, 342, 90, 50);
-        calculatorButton.setBounds(835, 412, 90, 50);
-        btn4.setBounds(945, 412, 90, 50);
+        enrolButton.setBounds(835, 335, 90, 50);
+        cancelButton.setBounds(945, 335, 90, 50);
+        calculatorButton.setBounds(835, 405, 90, 50);
+        scheduleButton.setBounds(945, 405, 90, 50);
+
+        //JLabel creditTitle = new JLabel("학점: ");
+        creditLabel = new JLabel();
+        updateCreditLabel();
+        creditLabel.setBounds(840, 460, 100, 20);
 
         panel.add(enrolButton);
         panel.add(cancelButton);
         panel.add(calculatorButton);
-        panel.add(btn4);
+        panel.add(scheduleButton);
+        panel.add(creditLabel);
 
         this.add(panel);
 
@@ -140,7 +146,10 @@ public class StuLectureList extends JFrame {
                 EEnrolmentState result = em.enrolLectureFromStudent(student.getId(), lectureCodes[selectedRowIndex]);
 
                 if (result == EEnrolmentState.SUCCESS) {
+                    updateCreditLabel();
                     enrolledLectureCodes.add(lectureCodes[selectedRowIndex]);
+                    lectureTable.setValueAt((Integer) lectureTable.getValueAt(selectedRowIndex, 4) - 1, selectedRowIndex,4);
+
                     JDialog message = new JDialog();
                     String lectureName = (String) lectureTable.getValueAt(selectedRowIndex, 0);
                     String professorName = (String) lectureTable.getValueAt(selectedRowIndex, 2);
@@ -187,7 +196,10 @@ public class StuLectureList extends JFrame {
                 EEnrolmentState result = em.cancelLectureFromStudent(student.getId(), lectureCodes[selectedRowIndex]);
 
                 if (result == EEnrolmentState.SUCCESS) {
+                    updateCreditLabel();
                     enrolledLectureCodes.remove(lectureCodes[selectedRowIndex]);
+                    lectureTable.setValueAt((Integer) lectureTable.getValueAt(selectedRowIndex, 4) + 1, selectedRowIndex,4);
+
                     JDialog message = new JDialog();
                     String lectureName = (String) lectureTable.getValueAt(selectedRowIndex, 0);
                     String professorName = (String) lectureTable.getValueAt(selectedRowIndex, 2);
@@ -220,13 +232,11 @@ public class StuLectureList extends JFrame {
             }
         });
 
-        btn4.addActionListener( new ActionListener(){
-           
+        scheduleButton.addActionListener( new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-        	   
-                    
+                JDialog message = new JDialog();
+                JOptionPane.showMessageDialog(message, "아직 준비되지 않은 기능입니다.");
             }
-           
         });
 
 
@@ -252,6 +262,13 @@ public class StuLectureList extends JFrame {
         tableRow[7] = sb.toString();
         return tableRow;
     }
+
+    private void updateCreditLabel() {
+        assert this.creditLabel != null;
+        this.creditLabel.setText("학점: " + this.student.getEnrolledCredit() + " / " + Student.MAX_CREDIT);
+    }
+
+
 
     // 코드 출처: https://blaseed.tistory.com/15
     // getTableCellRendererComponent() 메소드를 오버라이드하여 셀의 배경색을 지정할 수 있다.
