@@ -12,12 +12,13 @@ import enrolment.EnrolmentManager;
 
 import java.util.ArrayList;
 
-public class TestProgram {
-    public static void main(String[] args) {
-        //TestDataBase();
-        TestEnrolmentManager();
-    }
+/*
+* 개발을 진행하며 구현한 기능들을 테스트하기 위해 사용한 클래스 입니다.
+* 테스트를 진행하던 시기와 프로젝트 제출 시기의 데이터베이스 상태가 달라
+* 메소드를 호출해도 원활히 실행되지 않을 가능성이 높습니다.
+*/
 
+public class TestProgram {
     public static void TestDataBase() {
         // DataBase Example
         DataBase<Ajouin> DB_ajouin = AjouinDataBase.getDB();
