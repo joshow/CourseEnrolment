@@ -1,16 +1,15 @@
 package GUI;
 
 import database.AjouinDataBase;
-import database.DataBase;
 import datatype.Ajouin;
 import datatype.EAjouinIdentity;
+import datatype.Professor;
 import datatype.Student;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-import javax.imageio.*;
 
 public class Login extends JFrame{
 	public Login() {
@@ -36,13 +35,13 @@ public class Login extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String id = txtID.getText() ;
-				String password = String.valueOf(txtPass.getPassword());
+				String password = String.valueOf(txtPass.getPassword());    // 한글 타이밍 이슈 있음
 				
 				if(AjouinDataBase.isValidLoginInfo(id,password)) {
 					JOptionPane.showMessageDialog(null, "로그인에 성공하였습니다.");
 					Ajouin ajouin = AjouinDataBase.getDB().selectOrNull(id);
 					if (ajouin.getIdentity() == EAjouinIdentity.PROFESSOR) {
-						EventQueue.invokeLater(ProLectureList::new);
+						EventQueue.invokeLater(() -> new ProLectureList((Professor) ajouin));
 					} else {
 						EventQueue.invokeLater(() -> new StuLectureList((Student) ajouin));
 					}
@@ -64,13 +63,4 @@ public class Login extends JFrame{
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-
-	/*
-	public static void main(String[] args)
-	{
-		EventQueue.invokeLater(() -> {
-			new Login();
-		});
-	}
-	*/
 }

@@ -33,11 +33,16 @@ public class ProEnrolFrame extends JFrame {
 
     private ClassTimePanel classTimePanel;
 
+    private EnrollSuccessCallBackListener enrollSuccessCallBackListener;
 
-    public ProEnrolFrame(Professor professor) {
+
+    public ProEnrolFrame(Professor professor, EnrollSuccessCallBackListener enrollSuccessCallBackListener) {
         super();
+        assert professor != null;
+        assert enrollSuccessCallBackListener != null;
 
         this.professor = professor;
+        this.enrollSuccessCallBackListener = enrollSuccessCallBackListener;
 
         setTitle("강의 등록");
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -67,8 +72,6 @@ public class ProEnrolFrame extends JFrame {
             } else {    // 교양과목의 경우 어떤 학과의 교수나 등록 가능하다.
                 subjectCombo.addItem(item);
             }
-
-
         }
         add(subjectCombo);
 
@@ -153,8 +156,6 @@ public class ProEnrolFrame extends JFrame {
         bottomPanel.add(confirmButtonPanel);
 
         add(bottomPanel);
-
-        //setVisible(true);
     }
 
     // 창을 활성화 시키는 메소드. 모든 상태를 초기화한다.
@@ -226,6 +227,10 @@ public class ProEnrolFrame extends JFrame {
         if (result == EEnrolmentState.SUCCESS) {
             JDialog message = new JDialog();
             JOptionPane.showMessageDialog(message, "강의 등록에 성공하였습니다!");
+            EventQueue.invokeLater(() -> {
+                enrollSuccessCallBackListener.callback(lecture);
+            });
+            deActivate();
             return;
         }
 
@@ -377,5 +382,10 @@ public class ProEnrolFrame extends JFrame {
         public ArrayList<ClassTime> getClassTimes() {
             return classTimes;
         }
+    }
+
+
+    interface EnrollSuccessCallBackListener {
+        void callback(Lecture enrolledLecture);
     }
 }
