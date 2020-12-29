@@ -59,6 +59,4 @@ public class AjouinProfile extends JPanel {
         g.setFont(identityFont);
         g.drawString(this.identity, (int) (centerX - radius * 0.6), centerY + 11);
     }
-
-
 }

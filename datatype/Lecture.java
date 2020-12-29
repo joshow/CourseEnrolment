@@ -96,8 +96,6 @@ public class Lecture implements Cloneable, ICloneable<Lecture> {
         for (ClassTime myTime : this.classTimes) {
             for (ClassTime otherTime: other.classTimes) {
                 if (myTime.isOverlapTime(otherTime)) {
-                    //System.out.println(myTime.getDay().toString() + myTime.getStart() + "" + myTime.getEnd());
-                    //System.out.println(otherTime.getDay().toString() + otherTime.getStart() + "" + otherTime.getEnd());
                     return true;
                 }
             }

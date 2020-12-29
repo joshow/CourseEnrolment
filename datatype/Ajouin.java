@@ -1,10 +1,10 @@
 package datatype;
 
 public abstract class Ajouin implements Cloneable, ICloneable<Ajouin> {
-    private /*final*/ String id;
-    private String name;
-    private EDepartment major;
-    private EAjouinIdentity identity;
+    private final String id;
+    private final String name;
+    private final EDepartment major;
+    private final EAjouinIdentity identity;
 
     public Ajouin(String id, String name, EDepartment major, EAjouinIdentity identity) {
         this.id = id;

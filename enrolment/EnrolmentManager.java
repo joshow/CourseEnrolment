@@ -131,7 +131,6 @@ public class EnrolmentManager {
     }
 
     // 강의 등록
-    // TODO: Lecture 클래스에 교수 ID가 포함되어 있는데 이걸 매개변수로 받아야할지 생각하기
     public EEnrolmentState enrolLectureFromProfessor(String professorId, Lecture lecture) {
         if (lecture.isValid()) {    // 이미 유효한 강의라면 등록 되어있는 강의이다.
             return EEnrolmentState.FAIL_ENROLLED_LECTURE;

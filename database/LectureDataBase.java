@@ -93,7 +93,7 @@ public class LectureDataBase {
 
     private static void updateCSV(HashMap<String, Lecture> data) {
         try {
-            File file = new File("src/resources/Lecture_List.csv"); // TODO: 실행파일 제작 후 이 경로가 유효한지 확인 필요
+            File file = new File("src/resources/Lecture_List.csv");
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()), "UTF8"));
 
             output.write("LECTURE\n");
